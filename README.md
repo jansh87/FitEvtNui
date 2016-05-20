@@ -1,2 +1,2 @@
 # FitEvtNui
-Fit with Nuisance parameters
+Fitting with nuisance parameters
