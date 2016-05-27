@@ -149,6 +149,7 @@ void DefineHists(){
     vCont.push_back(tmp_cont);
      
     tmp_cont = CCont("other_mu", kOrange -1);
+    tmp_cont.fl_const = true; tmp_cont.startVal = 1;
     vCont.push_back(tmp_cont);
     nComponents = vCont.size();
     cout<<nComponents<<endl;
@@ -167,9 +168,9 @@ void DefineHists(){
     vector<double> mm2SB = {0, 2.5};
     vector<double> plepSB = {1, 2.5};
     //define axis 
-    axis[0][0][0] = makeAxis( plepel );
+    axis[0][0][0] = makeAxis( plep2el );
     axis[0][0][1] = makeAxis( mm2 );
-    axis[0][1][0] = makeAxis( plepmu );
+    axis[0][1][0] = makeAxis( plep2mu );
     axis[0][1][1] = makeAxis( mm2 );
      
     nBins = axis[0][0][0].axis.GetNbins()*axis[0][0][1].axis.GetNbins() + axis[0][1][0].axis.GetNbins()*axis[0][1][1].axis.GetNbins();
@@ -268,8 +269,8 @@ tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStre
     vFile.push_back(tmp_file );
  */
  
-    tmp_file = CFile(path,"DssMC.root","tree",'s'); tmp_file.weight = 0.39;// 0.388;
-    vFile.push_back(tmp_file );
+    tmp_file = CFile(path,"DssMC.root","tree",'s'); tmp_file.weight = 0.405;// 0.388;
+    //vFile.push_back(tmp_file );
  
     tmp_file =CFile(path, "ulnu.root", "tree",'u'); tmp_file.weight = 1./20;
     vFile.push_back(tmp_file );
@@ -286,29 +287,29 @@ tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStre
     
     
     
-    /* 
+     
     
     tmp_file =CFile(path, "dilepcharged_s1.root", "tree",'o'); tmp_file.weight = 1./nStreams;
-    vFile.push_back(tmp_file );
+    //vFile.push_back(tmp_file );
      
     tmp_file =CFile(path, "dilepmixed_s1.root", "tree",'o'); tmp_file.weight = 1./nStreams;
-    vFile.push_back(tmp_file );
+    //vFile.push_back(tmp_file );
      
     tmp_file =CFile(path, "dilepcontinuum_s1.root", "tree",'c'); tmp_file.weight = 1./nContiStreams;
-    vFile.push_back(tmp_file );
+    //vFile.push_back(tmp_file );
  
-    tmp_file = CFile(path,"dilepDssMC.root","tree",'s');    tmp_file.weight = 0.39;// 0.388;
-    vFile.push_back(tmp_file );
+    tmp_file = CFile(path,"dilepDssMC.root","tree",'s');    tmp_file.weight = 0.405;// 0.388;
+    //vFile.push_back(tmp_file );
  
     tmp_file =CFile(path, "dilepulnu.root", "tree",'u'); tmp_file.weight = 1./20;
-    vFile.push_back(tmp_file );
+    //vFile.push_back(tmp_file );
     tmp_file =CFile(path, "dileprare.root", "tree",'r'); tmp_file.weight = 1./50;
     //vFile.push_back(tmp_file );
     
     //pseudodata
     tmp_file =CFile(path, "dilepdata.root", "tree",'d');
-    if(!__pseudodata)vFile.push_back(tmp_file );
- */
+    //if(!__pseudodata)vFile.push_back(tmp_file );
+ 
  
 //init 
  
@@ -368,9 +369,9 @@ tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStre
     vErr.push_back( new t_bf("D0->X",989,1100,0.,t_error::_Dxlnu,t_error::_dummy));
     vErr.push_back( new t_bf("D+->X",989,2100,0.,t_error::_Dxlnu,t_error::_dummy));
     t_error::block_end[t_error::_Dxlnu] = vErr.size()-1;
-     
+     */
     //vErr.push_back( new t_bf("f+0",989,989,(float)0.024/1.058,'a');
-    */
+    
      
     vErr.push_back( new t_eff("FakeElec",0,1,ElecFake,nBins));
     vErr.push_back( new t_eff("EffElec",0,0,ElecEff,nBins));
@@ -468,14 +469,14 @@ void ReadFiles(){
                  
             if( btag.m_bc<5.27) continue;
             if( btag.pcode_b*lep1.q>0/* && abs(btag.pcode_b) == 521*/) continue;
-           // if(abs(btag.pcode_b) == 521) continue;
+            if(abs(btag.pcode_b) == 521) continue;
             if( log(btag.NB)<-4) continue;
             if(event.cos_thrAm>0.8) continue;
              
             //remove D**lnu from generic
-            if( it_f->Type == 'o'){ if(  abs(event.lclass) == 2 && event.dclass > 4) continue; }
+            //if( it_f->Type == 'o'){ if(  abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)) continue; }
             // add only true D**lnu events
-            else if( it_f->Type == 's'){ if(!(abs(event.lclass) == 2 && event.dclass > 4))continue;}
+            //else if( it_f->Type == 's'){ if(!(abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)))continue;}
  
             if(event.lclass == -2 && event.dclass == 11){
                 string sBDec(sBDecay);
@@ -486,7 +487,18 @@ void ReadFiles(){
                     event.dclass = 10;
                 }
                  
+            } else if(event.lclass == 2 && event.dclass == 9){
+                string sBDec(sBDecay);
+                CorrectBf::NoCharge(sBDec);
+                if(sBDec.find("521_100421") == 0){
+                    event.dclass = 9;       
+                } else if (sBDec.find("521_100423") == 0){
+                    event.dclass = 10;
+                }
             }
+            
+            if(event.dclass == 10) continue;
+ 
  
              
             //if(it_f->Type == 's') 
@@ -550,23 +562,24 @@ void ReadFiles(){
                 if(it_f->Type == 'o' || it_f->Type == 'c')
                     weight *= genMCCorr(run.exp);
                 weight *= it_f->weight;
-                 
+            if(it_f->Type == 's'){ 
                 if(abs(event.lclass) == 2 || abs(event.lclass) == 1){
                         weight *= CorrBf.weightB(event.lclass, event.dclass);
                     //cout<<CorrBf.weightB(event.lclass, event.dclass)<<" "<<event.lclass<<" "<<event.dclass<<endl;
                 }
                 else
                     weight *= CorrBf.weightB(sBDecay);
-         
-                weight *= CorrBf.weightD(sDDecay);
+        
          
          	if(abs(event.lclass) == 2 && event.dclass >4){
 				
 			weight *= CorrBf.FixDss(sDDecay);
-				
+		
 		}
+	    }
+		weight *= CorrBf.weightD(sDDecay);
          	
-         	double wtmp = weight;
+         	//double wtmp = weight;
             //  if(globalBin(evt_aux)<0) cout<<"minus"<<endl;
              	double eff_error;
                 if(lep1.fl_lep==10){//true e
@@ -605,7 +618,7 @@ void ReadFiles(){
                 }
  
                  
-      		weight = wtmp;
+      		//weight = wtmp;
                  
                  
                  

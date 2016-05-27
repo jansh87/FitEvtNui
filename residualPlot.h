@@ -50,7 +50,7 @@ void DrawResiduals(THStack *StackMC, Th* data, TPad *pad){
 		dat = data->GetBinContent(i);
 		if(dat != 0)
 		{
-		    sumMC->SetBinContent(i, (dat -val)/sqrt(dat) );
+		    sumMC->SetBinContent(i, (val-dat)/sqrt(dat) );
 		    sumMC->SetBinError(i, 1.);
 		    //sumMC->SetBinContent(i, dat/val );
 		    //sumMC->SetBinError(i, sqrt(dat)/val);
