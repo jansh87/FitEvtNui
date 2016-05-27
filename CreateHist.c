@@ -221,16 +221,31 @@ void Init(){
     
     
     //MC
-  
- tmp_file =CFile(path, "charged_s0.root", "tree",'o'); tmp_file.weight = 1./nStreams;
+
+//pseudodata
+
+
+   
+
+    tmp_file =CFile(path, "charged_s4.root", "tree",'o'); tmp_file.weight = 1./nStreams;
     vFile.push_back(tmp_file );
+    
+    tmp_file =CFile(path, "continuum_s4.root", "tree",'c'); tmp_file.weight = 1./nContiStreams;
+    vFile.push_back(tmp_file );
+    
+    tmp_file = CFile(path,"DssMC.root","tree",'s'); tmp_file.weight = 0.405*2;// 0.388;
+    vFile.push_back(tmp_file );
+    
      
-    tmp_file =CFile(path, "mixed_s0.root", "tree",'o'); tmp_file.weight = 1./nStreams;
+    tmp_file =CFile(path, "data.root", "tree",'d');
+    if(!(__pseudodata || __toydata))vFile.push_back(tmp_file );
+   
+    tmp_file =CFile(path, "mixed_s4.root", "tree",'o'); tmp_file.weight = 1./nStreams;
     vFile.push_back(tmp_file );
+    
      
-    tmp_file =CFile(path, "continuum_s0.root", "tree",'c'); tmp_file.weight = 1./nContiStreams;
-    vFile.push_back(tmp_file );
-/*
+ 
+/*  
 tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStreams;
     vFile.push_back(tmp_file );
      
@@ -258,7 +273,7 @@ tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStre
      
     tmp_file =CFile(path, "continuum_s3.root", "tree",'c'); tmp_file.weight = 1./nContiStreams;
     vFile.push_back(tmp_file );
-
+ 
   tmp_file =CFile(path, "charged_s4.root", "tree",'o'); tmp_file.weight = 1./nStreams;
     vFile.push_back(tmp_file );
      
@@ -267,10 +282,9 @@ tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStre
      
     tmp_file =CFile(path, "continuum_s4.root", "tree",'c'); tmp_file.weight = 1./nContiStreams;
     vFile.push_back(tmp_file );
- */
+*/
  
-    tmp_file = CFile(path,"DssMC.root","tree",'s'); tmp_file.weight = 0.405;// 0.388;
-    //vFile.push_back(tmp_file );
+    
  
     tmp_file =CFile(path, "ulnu.root", "tree",'u'); tmp_file.weight = 1./20;
     vFile.push_back(tmp_file );
@@ -279,9 +293,7 @@ tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStre
     tmp_file =CFile(path, "rare.root", "tree",'r'); tmp_file.weight = 1./50;
     //vFile.push_back(tmp_file );
      
-    //pseudodata
-    tmp_file =CFile(path, "data.root", "tree",'d');
-    if(!(__pseudodata || __toydata))vFile.push_back(tmp_file );
+    
     
     
     
@@ -469,14 +481,18 @@ void ReadFiles(){
                  
             if( btag.m_bc<5.27) continue;
             if( btag.pcode_b*lep1.q>0/* && abs(btag.pcode_b) == 521*/) continue;
-            if(abs(btag.pcode_b) == 521) continue;
+            if(abs(btag.pcode_b) == 511) continue;
+            if( (i%2==0) && (it_f->Type == 's')) continue; 
+            
+            //if( ((i+2)%4)!=0 && (it_f->Type == 's')){ continue; }
+            
             if( log(btag.NB)<-4) continue;
             if(event.cos_thrAm>0.8) continue;
              
             //remove D**lnu from generic
-            //if( it_f->Type == 'o'){ if(  abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)) continue; }
-            // add only true D**lnu events
-            //else if( it_f->Type == 's'){ if(!(abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)))continue;}
+            if( it_f->Type == 'o'){ if(  abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)) continue; }
+           // add only true D**lnu events
+            else if( it_f->Type == 's'){ if(!(abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)))continue;}
  
             if(event.lclass == -2 && event.dclass == 11){
                 string sBDec(sBDecay);
