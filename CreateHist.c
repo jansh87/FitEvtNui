@@ -270,7 +270,7 @@ tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStre
  */
  
     tmp_file = CFile(path,"DssMC.root","tree",'s'); tmp_file.weight = 0.405;// 0.388;
-    //vFile.push_back(tmp_file );
+    vFile.push_back(tmp_file );
  
     tmp_file =CFile(path, "ulnu.root", "tree",'u'); tmp_file.weight = 1./20;
     vFile.push_back(tmp_file );
@@ -433,6 +433,13 @@ int globalBin(t_evt_aux& evt){
  
 void ReadFiles(){
  
+ 
+    TH1F* hDss[2];
+    for(int i = 0; i<2; i++){
+    
+    	hDss[i] = new TH1F(Form("hDss_%i",i),Form("hDss_%i",i),60,0.5,2.5);
+    
+    }
     TTree *t;
     fileCount = 0;
     for(vector<CFile>::iterator it_f = vFile.begin(); it_f != vFile.end(); ++it_f)
@@ -617,10 +624,17 @@ void ReadFiles(){
  
                 }
  
-                 
+                if(abs(event.lclass) == 2 && event.dclass >4){
+//                	cout<<"huhu"<<endl; 
+                	hDss[it_f->Type == 's'] -> Fill(lep1.ps, weight);
+                }
       		//weight = wtmp;
                  
-                 
+               //remove D**lnu from generic
+            if( it_f->Type == 'o'){ if(  abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)) continue; }
+            // add only true D**lnu events
+            else if( it_f->Type == 's'){ if(!(abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)))continue;}
+ 
                  
                 evt.weight = weight;
                 evt.eff_error = eff_error;
@@ -735,7 +749,14 @@ void ReadFiles(){
     hData->SetMarkerColor(20);
      
     cv->Print("hists.pdf");
-     
+    
+    cv -> Clear();
+    hDss[0] -> SetLineColor(kRed);
+    hDss[0] -> SetLineWidth(2);
+    hDss[0] -> Draw();
+    hDss[1] -> SetLineWidth(2);
+    hDss[1] -> Draw("same");
+    cv->Print("DssHists.pdf");
  
 }
 
