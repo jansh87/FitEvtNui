@@ -222,13 +222,13 @@ void Init(){
     
     //MC
   
- tmp_file =CFile(path, "charged_s0.root", "tree",'o'); tmp_file.weight = 1./nStreams;
+ tmp_file =CFile(path, "charged_s4.root", "tree",'o'); tmp_file.weight = 1./nStreams;
     vFile.push_back(tmp_file );
      
-    tmp_file =CFile(path, "mixed_s0.root", "tree",'o'); tmp_file.weight = 1./nStreams;
+    tmp_file =CFile(path, "mixed_s4.root", "tree",'o'); tmp_file.weight = 1./nStreams;
     vFile.push_back(tmp_file );
      
-    tmp_file =CFile(path, "continuum_s0.root", "tree",'c'); tmp_file.weight = 1./nContiStreams;
+    tmp_file =CFile(path, "continuum_s4.root", "tree",'c'); tmp_file.weight = 1./nContiStreams;
     vFile.push_back(tmp_file );
 /*
 tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStreams;
@@ -269,7 +269,7 @@ tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStre
     vFile.push_back(tmp_file );
  */
  
-    tmp_file = CFile(path,"DssMC.root","tree",'s'); tmp_file.weight = 0.405;// 0.388;
+    tmp_file = CFile(path,"DssMC.root","tree",'s'); tmp_file.weight = 0.405*2;// 0.388;
     vFile.push_back(tmp_file );
  
     tmp_file =CFile(path, "ulnu.root", "tree",'u'); tmp_file.weight = 1./20;
@@ -437,7 +437,7 @@ void ReadFiles(){
     TH1F* hDss[2];
     for(int i = 0; i<2; i++){
     
-    	hDss[i] = new TH1F(Form("hDss_%i",i),Form("hDss_%i",i),60,0.5,2.5);
+    	hDss[i] = new TH1F(Form("hDss_%i",i),Form("hDss_%i",i),40,0,15);
     
     }
     TTree *t;
@@ -462,28 +462,29 @@ void ReadFiles(){
         t->SetBranchAddress("sDDecay", &sDDecay);
  
  
-        int nEntries = t->GetEntries();
+        long int nEntries = t->GetEntries();
          
         cout<<"Read "<<it_f->FileName<<" with "<<nEntries<<" Events and weight "<<it_f->weight<<endl;
  
         //event loop
          
-        for(int i =0; i<nEntries; ++i)
+        for(long int i =nEntries-1; i>=0; --i)
         {
              
-            t->GetEntry(i);
+            if(t->GetEntry(i)<= 0) cout<<"hilfe"<<endl;
         //cuts
                  
             if( btag.m_bc<5.27) continue;
             if( btag.pcode_b*lep1.q>0/* && abs(btag.pcode_b) == 521*/) continue;
-            if(abs(btag.pcode_b) == 521) continue;
+            if(abs(btag.pcode_b) == 511) continue;
+            if(i%2==1 && it_f->Type == 's') continue;
             if( log(btag.NB)<-4) continue;
             if(event.cos_thrAm>0.8) continue;
              
             //remove D**lnu from generic
-            //if( it_f->Type == 'o'){ if(  abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)) continue; }
+            if( it_f->Type == 'o'){ if(  abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)) continue; }
             // add only true D**lnu events
-            //else if( it_f->Type == 's'){ if(!(abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)))continue;}
+            else if( it_f->Type == 's'){ if(!(abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)))continue;}
  
             if(event.lclass == -2 && event.dclass == 11){
                 string sBDec(sBDecay);
@@ -626,7 +627,7 @@ void ReadFiles(){
  
                 if(abs(event.lclass) == 2 && event.dclass >4){
 //                	cout<<"huhu"<<endl; 
-                	hDss[it_f->Type == 's'] -> Fill(lep1.ps, weight);
+                	hDss[i%2] -> Fill(gmiss.m2, weight);
                 }
       		//weight = wtmp;
                  
@@ -1226,7 +1227,7 @@ belleLatex->SetTextSize(0.07);
     Init();
      
     ReadFiles();
-    
+   
     
     PerfFit();
    
