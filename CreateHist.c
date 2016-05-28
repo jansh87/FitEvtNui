@@ -29,7 +29,7 @@
 #include "residualPlot.h"
 //globals
  
-#define __pseudodata 0
+#define __pseudodata 1
 #define __calcerrors 0
 #define __toydata    0
  
@@ -234,7 +234,7 @@ void Init(){
     vFile.push_back(tmp_file );
     
     tmp_file = CFile(path,"DssMC.root","tree",'s'); tmp_file.weight = 0.405*2;// 0.388;
-    vFile.push_back(tmp_file );
+   // vFile.push_back(tmp_file );
     
      
     tmp_file =CFile(path, "data.root", "tree",'d');
@@ -245,13 +245,13 @@ void Init(){
     
      
  
-/*  
-tmp_file =CFile(path, "charged_s1.root", "tree",'o'); tmp_file.weight = 1./nStreams;
+  
+tmp_file =CFile(path, "charged_s0.root", "tree",'s'); tmp_file.weight = 1./nStreams;
     vFile.push_back(tmp_file );
      
-    tmp_file =CFile(path, "mixed_s1.root", "tree",'o'); tmp_file.weight = 1./nStreams;
+    tmp_file =CFile(path, "mixed_s0.root", "tree",'s'); tmp_file.weight = 1./nStreams;
     vFile.push_back(tmp_file );
-     
+  /*   
     tmp_file =CFile(path, "continuum_s1.root", "tree",'c'); tmp_file.weight = 1./nContiStreams;
     vFile.push_back(tmp_file );
 
@@ -445,6 +445,7 @@ int globalBin(t_evt_aux& evt){
  
 void ReadFiles(){
  
+    srand(time(NULL));
     TTree *t;
     fileCount = 0;
     for(vector<CFile>::iterator it_f = vFile.begin(); it_f != vFile.end(); ++it_f)
@@ -481,18 +482,18 @@ void ReadFiles(){
                  
             if( btag.m_bc<5.27) continue;
             if( btag.pcode_b*lep1.q>0/* && abs(btag.pcode_b) == 521*/) continue;
-            if(abs(btag.pcode_b) == 511) continue;
-            if( (i%2==0) && (it_f->Type == 's')) continue; 
-            
+            if(abs(btag.pcode_b) == 521) continue;
+            //if( (i%2==1) && (it_f->Type == 's')) continue; 
+            //if(run.exp>=27) continue;
             //if( ((i+2)%4)!=0 && (it_f->Type == 's')){ continue; }
             
             if( log(btag.NB)<-4) continue;
             if(event.cos_thrAm>0.8) continue;
              
             //remove D**lnu from generic
-            if( it_f->Type == 'o'){ if(  abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)) continue; }
+            //if( it_f->Type == 'o'){ if(  abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)) continue; }
            // add only true D**lnu events
-            else if( it_f->Type == 's'){ if(!(abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)))continue;}
+           // else if( it_f->Type == 's'){ if(!(abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)))continue;}
  
             if(event.lclass == -2 && event.dclass == 11){
                 string sBDec(sBDecay);
@@ -575,10 +576,10 @@ void ReadFiles(){
                     weight*=0.9;
                 */
                 weight *= tagcorr(btag.b_mode, (double)btag.NB);
-                if(it_f->Type == 'o' || it_f->Type == 'c')
+                //if(it_f->Type == 'o' || it_f->Type == 'c')
                     weight *= genMCCorr(run.exp);
                 weight *= it_f->weight;
-            if(it_f->Type == 's'){ 
+      /*      if(it_f->Type == 's'){ 
                 if(abs(event.lclass) == 2 || abs(event.lclass) == 1){
                         weight *= CorrBf.weightB(event.lclass, event.dclass);
                     //cout<<CorrBf.weightB(event.lclass, event.dclass)<<" "<<event.lclass<<" "<<event.dclass<<endl;
@@ -592,7 +593,7 @@ void ReadFiles(){
 			weight *= CorrBf.FixDss(sDDecay);
 		
 		}
-	    }
+	    }*/
 		weight *= CorrBf.weightD(sDDecay);
          	
          	//double wtmp = weight;
@@ -703,13 +704,13 @@ void ReadFiles(){
                         evt.classes.push_back(i);
              
                 }
-             //streamtest
-             //	if(fileCount < 6){
-              //  	hData->AddBinContent(evt.bin+1,weight);
-              //  }else{ 
+             
+              	if( it_f -> Type != 's') {
                 	hMC_Comp[evt.component]->AddBinContent(evt.bin+1,weight);
-                	evtlist.push_back(evt);
-               // }
+                       	evtlist.push_back(evt);
+               
+                
+                }
                
                  
                 //signal verschieben && _toydata
@@ -719,6 +720,11 @@ void ReadFiles(){
                  
                 if(__pseudodata){
                    // evt_aux.v1 += 0.04;
+                   //if(rnd%2 == 1 && it_f->Type == 's') continue;
+                    if( it_f->Type == 'o'){ if(  abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)) continue; }
+		   // add only true D**lnu events
+		    else if( it_f->Type == 's'){ if(!(abs(event.lclass) == 2 && (event.dclass > 4/* && event.dclass != 5 && event.dclass != 7 && event.dclass != 8*/)))continue;}
+                    
                     hData->AddBinContent(globalBin(evt_aux)+1,weight);
          	}
             } else {//end non-data
